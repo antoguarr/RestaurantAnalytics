@@ -6,7 +6,7 @@ import streamlit as st
 
 from src.data_cleaning import clean_pos_data, load_pos_data
 from src.feature_engineering import add_high_revenue_target, add_time_features
-from src.model import get_feature_importance, train_revenue_classifier
+from src.model import evaluate_revenue_models, get_feature_importance
 
 
 PROJECT_ROOT = Path(__file__).parent
@@ -47,8 +47,8 @@ def load_dashboard_data() -> pd.DataFrame:
 
 
 @st.cache_resource
-def train_dashboard_model(df: pd.DataFrame) -> dict:
-    return train_revenue_classifier(df)
+def evaluate_dashboard_models(df: pd.DataFrame) -> dict:
+    return evaluate_revenue_models(df)
 
 
 def format_currency(value: float) -> str:
@@ -296,11 +296,54 @@ def show_operations_tab(df: pd.DataFrame) -> None:
 
 
 def show_model_tab(df: pd.DataFrame) -> None:
-    model_results = train_dashboard_model(df)
-    feature_importance = get_feature_importance(model_results["model"]).head(10)
+    evaluation = evaluate_dashboard_models(df)
+    summary = evaluation["summary"].copy()
+    random_forest_results = evaluation["models"]["Random Forest"]
+    feature_importance = get_feature_importance(random_forest_results["model"]).head(10)
 
     st.caption("Model results are trained on the full dataset, independent of dashboard filters.")
-    st.metric("High-revenue classifier accuracy", f"{model_results['accuracy']:.2%}")
+    st.metric("Best holdout F1 model", evaluation["best_model_name"])
+
+    st.subheader("Model Comparison")
+    st.dataframe(
+        summary,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Accuracy": st.column_config.NumberColumn(format="%.3f"),
+            "F1": st.column_config.NumberColumn(format="%.3f"),
+            "ROC_AUC": st.column_config.NumberColumn(format="%.3f"),
+            "CV_Accuracy_Mean": st.column_config.NumberColumn(format="%.3f"),
+            "CV_Accuracy_Std": st.column_config.NumberColumn(format="%.3f"),
+            "CV_F1_Mean": st.column_config.NumberColumn(format="%.3f"),
+            "CV_F1_Std": st.column_config.NumberColumn(format="%.3f"),
+            "CV_ROC_AUC_Mean": st.column_config.NumberColumn(format="%.3f"),
+            "CV_ROC_AUC_Std": st.column_config.NumberColumn(format="%.3f"),
+        },
+    )
+
+    confusion = random_forest_results["confusion_matrix"]
+    confusion_df = pd.DataFrame(
+        confusion,
+        index=["Actual Low", "Actual High"],
+        columns=["Predicted Low", "Predicted High"],
+    )
+
+    left, right = st.columns(2)
+    with left:
+        fig = px.imshow(
+            confusion_df,
+            text_auto=True,
+            title="Random Forest Confusion Matrix",
+            color_continuous_scale=["#F4E3C1", "#2F6F73"],
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    with right:
+        st.subheader("Random Forest Holdout Metrics")
+        st.metric("Accuracy", f"{random_forest_results['accuracy']:.2%}")
+        st.metric("F1 score", f"{random_forest_results['f1']:.3f}")
+        st.metric("ROC-AUC", f"{random_forest_results['roc_auc']:.3f}")
 
     fig = px.bar(
         feature_importance.sort_values("Importance"),
@@ -314,8 +357,8 @@ def show_model_tab(df: pd.DataFrame) -> None:
     fig.update_layout(coloraxis_showscale=False)
     st.plotly_chart(fig, use_container_width=True)
 
-    st.text("Classification report")
-    st.code(model_results["classification_report"])
+    st.text("Random Forest classification report")
+    st.code(random_forest_results["classification_report"])
 
 
 def show_insights_tab() -> None:
