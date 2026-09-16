@@ -8,6 +8,8 @@ The SQL analysis uses SQLite against the cleaned Power BI export:
 powerbi/data/restaurant_pos_powerbi.csv
 ```
 
+Each row is treated as a POS menu-item record. The source has no order or receipt ID, so SQL outputs report POS record counts and average line revenue rather than completed transactions or average order value.
+
 ## Files
 
 ```text
@@ -45,5 +47,5 @@ The script loads the CSV into an in-memory SQLite database, runs the queries fro
 - Which menu items are the top revenue drivers?
 - Which weekdays have the highest average daily revenue?
 - Which hours generate the most revenue?
-- Which servers generate the most revenue and average order value?
+- Which servers generate the most revenue and average line revenue?
 - Which servers have the highest dessert revenue share?

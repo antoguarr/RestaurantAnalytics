@@ -6,8 +6,8 @@
 SELECT
     category,
     ROUND(SUM(revenue), 2) AS total_revenue,
-    COUNT(*) AS transactions,
-    ROUND(AVG(revenue), 2) AS average_order_value,
+    COUNT(*) AS pos_records,
+    ROUND(AVG(revenue), 2) AS average_line_revenue,
     ROUND(SUM(revenue) * 100.0 / (SELECT SUM(revenue) FROM pos), 2) AS revenue_share_pct
 FROM pos
 GROUP BY category
@@ -19,8 +19,8 @@ SELECT
     category,
     ROUND(SUM(revenue), 2) AS total_revenue,
     ROUND(SUM(quantity), 1) AS units_sold,
-    COUNT(*) AS transactions,
-    ROUND(AVG(revenue), 2) AS average_order_value
+    COUNT(*) AS pos_records,
+    ROUND(AVG(revenue), 2) AS average_line_revenue
 FROM pos
 GROUP BY menu_item, category
 ORDER BY total_revenue DESC
@@ -49,8 +49,8 @@ ORDER BY day_of_week;
 SELECT
     hour,
     ROUND(SUM(revenue), 2) AS total_revenue,
-    COUNT(*) AS transactions,
-    ROUND(AVG(revenue), 2) AS average_order_value
+    COUNT(*) AS pos_records,
+    ROUND(AVG(revenue), 2) AS average_line_revenue
 FROM pos
 GROUP BY hour
 ORDER BY total_revenue DESC;
@@ -59,9 +59,9 @@ ORDER BY total_revenue DESC;
 SELECT
     server_name,
     ROUND(SUM(revenue), 2) AS total_revenue,
-    COUNT(*) AS transactions,
+    COUNT(*) AS pos_records,
     ROUND(SUM(quantity), 1) AS units_sold,
-    ROUND(AVG(revenue), 2) AS average_order_value,
+    ROUND(AVG(revenue), 2) AS average_line_revenue,
     ROUND(SUM(revenue) * 100.0 / (SELECT SUM(revenue) FROM pos), 2) AS revenue_share_pct
 FROM pos
 GROUP BY server_name

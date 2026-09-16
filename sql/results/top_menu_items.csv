@@ -1,4 +1,4 @@
-menu_item,category,total_revenue,units_sold,transactions,average_order_value
+menu_item,category,total_revenue,units_sold,pos_records,average_line_revenue
 New York Strip,Entree,82771.6,2178.2,449,184.35
 Filet Mignon,Entree,82395.6,1961.8,413,199.51
 Ribeye Steak,Entree,63409.5,1811.7,385,164.7

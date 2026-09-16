@@ -107,27 +107,27 @@ def filter_data(df: pd.DataFrame) -> pd.DataFrame:
 
 def show_kpis(df: pd.DataFrame) -> None:
     total_revenue = df["Revenue"].sum()
-    total_orders = len(df)
-    average_order_value = df["Revenue"].mean() if total_orders else 0
+    total_records = len(df)
+    average_line_revenue = df["Revenue"].mean() if total_records else 0
     total_units = df["Quantity"].sum()
 
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Total revenue", format_currency(total_revenue))
-    col2.metric("Transactions", f"{total_orders:,}")
-    col3.metric("Average order value", format_currency(average_order_value))
+    col2.metric("POS records", f"{total_records:,}")
+    col3.metric("Average line revenue", format_currency(average_line_revenue))
     col4.metric("Units sold", f"{total_units:,.1f}")
 
 
 def show_overview_tab(df: pd.DataFrame) -> None:
     category_revenue = (
         df.groupby("Category", as_index=False)
-        .agg(Revenue=("Revenue", "sum"), Transactions=("Revenue", "size"))
+        .agg(Revenue=("Revenue", "sum"), POS_Records=("Revenue", "size"))
         .sort_values("Revenue", ascending=False)
     )
 
     weekday_revenue = (
         df.groupby("Weekday", as_index=False)
-        .agg(Revenue=("Revenue", "sum"), Transactions=("Revenue", "size"))
+        .agg(Revenue=("Revenue", "sum"), POS_Records=("Revenue", "size"))
     )
     weekday_revenue["Weekday"] = pd.Categorical(
         weekday_revenue["Weekday"],
@@ -148,7 +148,7 @@ def show_overview_tab(df: pd.DataFrame) -> None:
             color_discrete_sequence=COLOR_SEQUENCE,
         )
         fig.update_layout(showlegend=False, yaxis={"categoryorder": "total ascending"})
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with right:
         fig = px.bar(
@@ -160,14 +160,14 @@ def show_overview_tab(df: pd.DataFrame) -> None:
             color_discrete_sequence=COLOR_SEQUENCE,
         )
         fig.update_layout(showlegend=False)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     hourly_revenue = (
         df.groupby("Hour", as_index=False)
         .agg(
             Revenue=("Revenue", "sum"),
-            Transactions=("Revenue", "size"),
-            Average_Order_Value=("Revenue", "mean"),
+            POS_Records=("Revenue", "size"),
+            Average_Line_Revenue=("Revenue", "mean"),
         )
         .sort_values("Hour")
     )
@@ -177,10 +177,10 @@ def show_overview_tab(df: pd.DataFrame) -> None:
         y="Revenue",
         markers=True,
         title="Revenue by Hour",
-        hover_data=["Transactions", "Average_Order_Value"],
+        hover_data=["POS_Records", "Average_Line_Revenue"],
     )
     fig.update_traces(line_color="#2F6F73")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def show_menu_tab(df: pd.DataFrame) -> None:
@@ -189,8 +189,8 @@ def show_menu_tab(df: pd.DataFrame) -> None:
         .agg(
             Revenue=("Revenue", "sum"),
             Quantity=("Quantity", "sum"),
-            Transactions=("Revenue", "size"),
-            Average_Order_Value=("Revenue", "mean"),
+            POS_Records=("Revenue", "size"),
+            Average_Line_Revenue=("Revenue", "mean"),
         )
         .sort_values("Revenue", ascending=False)
     )
@@ -204,9 +204,9 @@ def show_menu_tab(df: pd.DataFrame) -> None:
         title="Top Menu Items by Revenue",
         color="Category",
         color_discrete_sequence=COLOR_SEQUENCE,
-        hover_data=["Quantity", "Transactions", "Average_Order_Value"],
+        hover_data=["Quantity", "POS_Records", "Average_Line_Revenue"],
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     category_mix = (
         df.groupby("Category", as_index=False)
@@ -221,15 +221,15 @@ def show_menu_tab(df: pd.DataFrame) -> None:
         color_discrete_sequence=COLOR_SEQUENCE,
         hole=0.45,
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     st.dataframe(
         item_revenue,
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         column_config={
             "Revenue": st.column_config.NumberColumn(format="$%.2f"),
-            "Average_Order_Value": st.column_config.NumberColumn(format="$%.2f"),
+            "Average_Line_Revenue": st.column_config.NumberColumn(format="$%.2f"),
             "Quantity": st.column_config.NumberColumn(format="%.1f"),
         },
     )
@@ -240,9 +240,9 @@ def show_operations_tab(df: pd.DataFrame) -> None:
         df.groupby("Server Name", as_index=False)
         .agg(
             Revenue=("Revenue", "sum"),
-            Transactions=("Revenue", "size"),
+            POS_Records=("Revenue", "size"),
             Quantity=("Quantity", "sum"),
-            Average_Order_Value=("Revenue", "mean"),
+            Average_Line_Revenue=("Revenue", "mean"),
         )
         .sort_values("Revenue", ascending=False)
     )
@@ -251,8 +251,8 @@ def show_operations_tab(df: pd.DataFrame) -> None:
         df.groupby("Order Type", as_index=False)
         .agg(
             Revenue=("Revenue", "sum"),
-            Transactions=("Revenue", "size"),
-            Average_Order_Value=("Revenue", "mean"),
+            POS_Records=("Revenue", "size"),
+            Average_Line_Revenue=("Revenue", "mean"),
         )
         .sort_values("Revenue", ascending=False)
     )
@@ -269,7 +269,7 @@ def show_operations_tab(df: pd.DataFrame) -> None:
             color_discrete_sequence=COLOR_SEQUENCE,
         )
         fig.update_layout(showlegend=False)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with right:
         fig = px.bar(
@@ -281,15 +281,15 @@ def show_operations_tab(df: pd.DataFrame) -> None:
             color_discrete_sequence=COLOR_SEQUENCE,
         )
         fig.update_layout(showlegend=False)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     st.dataframe(
         server_performance,
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         column_config={
             "Revenue": st.column_config.NumberColumn(format="$%.2f"),
-            "Average_Order_Value": st.column_config.NumberColumn(format="$%.2f"),
+            "Average_Line_Revenue": st.column_config.NumberColumn(format="$%.2f"),
             "Quantity": st.column_config.NumberColumn(format="%.1f"),
         },
     )
@@ -298,6 +298,9 @@ def show_operations_tab(df: pd.DataFrame) -> None:
 def show_model_tab(df: pd.DataFrame) -> None:
     evaluation = evaluate_dashboard_models(df)
     summary = evaluation["summary"].copy()
+    summary = summary[["Model", "Accuracy", "F1", "ROC_AUC", "CV_F1_Mean"]].rename(
+        columns={"ROC_AUC": "ROC-AUC", "CV_F1_Mean": "CV F1"}
+    )
     random_forest_results = evaluation["models"]["Random Forest"]
     feature_importance = get_feature_importance(random_forest_results["model"]).head(10)
 
@@ -307,18 +310,13 @@ def show_model_tab(df: pd.DataFrame) -> None:
     st.subheader("Model Comparison")
     st.dataframe(
         summary,
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         column_config={
             "Accuracy": st.column_config.NumberColumn(format="%.3f"),
             "F1": st.column_config.NumberColumn(format="%.3f"),
-            "ROC_AUC": st.column_config.NumberColumn(format="%.3f"),
-            "CV_Accuracy_Mean": st.column_config.NumberColumn(format="%.3f"),
-            "CV_Accuracy_Std": st.column_config.NumberColumn(format="%.3f"),
-            "CV_F1_Mean": st.column_config.NumberColumn(format="%.3f"),
-            "CV_F1_Std": st.column_config.NumberColumn(format="%.3f"),
-            "CV_ROC_AUC_Mean": st.column_config.NumberColumn(format="%.3f"),
-            "CV_ROC_AUC_Std": st.column_config.NumberColumn(format="%.3f"),
+            "ROC-AUC": st.column_config.NumberColumn(format="%.3f"),
+            "CV F1": st.column_config.NumberColumn(format="%.3f"),
         },
     )
 
@@ -337,7 +335,7 @@ def show_model_tab(df: pd.DataFrame) -> None:
             title="Random Forest Confusion Matrix",
             color_continuous_scale=["#F4E3C1", "#2F6F73"],
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with right:
         st.subheader("Random Forest Holdout Metrics")
@@ -355,7 +353,7 @@ def show_model_tab(df: pd.DataFrame) -> None:
         color_continuous_scale=["#E9C46A", "#2F6F73"],
     )
     fig.update_layout(coloraxis_showscale=False)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     st.text("Random Forest classification report")
     st.code(random_forest_results["classification_report"])
@@ -386,14 +384,14 @@ def show_insights_tab() -> None:
             },
             {
                 "Finding": "Nina led server revenue with $91,506.80, about 20.8% of total revenue.",
-                "Recommendation": "Study top-server order patterns and use them for training or incentive design.",
+                "Recommendation": "Study top-server POS record patterns and use them to form testable training hypotheses.",
             },
         ]
     )
 
     st.dataframe(
         recommendations,
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
 
@@ -403,11 +401,11 @@ filtered_df = filter_data(df)
 
 st.title("Restaurant POS Analytics Dashboard")
 st.caption(
-    "Interactive revenue, menu, server, and order trend analysis from simulated steakhouse POS data."
+    "Interactive revenue, menu, server, and POS record analysis from simulated steakhouse data."
 )
 
 if filtered_df.empty:
-    st.warning("No transactions match the selected filters.")
+    st.warning("No POS records match the selected filters.")
     st.stop()
 
 show_kpis(filtered_df)

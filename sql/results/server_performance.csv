@@ -1,4 +1,4 @@
-server_name,total_revenue,transactions,units_sold,average_order_value,revenue_share_pct
+server_name,total_revenue,pos_records,units_sold,average_line_revenue,revenue_share_pct
 Nina,91506.8,1028,4968.3,89.01,20.78
 Sarah,89615.0,1047,4914.6,85.59,20.35
 Jake,89288.2,974,4865.1,91.67,20.28

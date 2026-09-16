@@ -1,4 +1,4 @@
-category,total_revenue,transactions,average_order_value,revenue_share_pct
+category,total_revenue,pos_records,average_line_revenue,revenue_share_pct
 Entree,272974.9,1658,164.64,61.99
 Beverage,53358.4,796,67.03,12.12
 Side,48710.9,1323,36.82,11.06

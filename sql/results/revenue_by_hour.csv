@@ -1,4 +1,4 @@
-hour,total_revenue,transactions,average_order_value
+hour,total_revenue,pos_records,average_line_revenue
 19,48772.6,435,112.12
 20,48367.8,429,112.75
 21,47722.5,424,112.55

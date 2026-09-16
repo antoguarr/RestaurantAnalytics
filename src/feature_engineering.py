@@ -17,7 +17,7 @@ def add_time_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_high_revenue_target(df: pd.DataFrame) -> pd.DataFrame:
-    """Add a binary target for orders above the median revenue."""
+    """Add a binary target for POS records above the median line revenue."""
     featured_df = df.copy()
     featured_df["High Revenue"] = featured_df["Revenue"] > featured_df["Revenue"].median()
     return featured_df

@@ -11,7 +11,7 @@ Total Revenue = SUM('POS'[revenue])
 ```
 
 ```DAX
-Total Transactions = COUNTROWS('POS')
+POS Records = COUNTROWS('POS')
 ```
 
 ```DAX
@@ -19,7 +19,7 @@ Units Sold = SUM('POS'[quantity])
 ```
 
 ```DAX
-Average Order Value = AVERAGE('POS'[revenue])
+Average Line Revenue = AVERAGE('POS'[revenue])
 ```
 
 ```DAX
@@ -44,21 +44,21 @@ DIVIDE(
 )
 ```
 
-## High-Revenue Order Measures
+## High-Revenue POS Record Measures
 
 ```DAX
-High Revenue Transactions =
+High Revenue POS Records =
 CALCULATE(
-    [Total Transactions],
+    [POS Records],
     'POS'[high_revenue] = TRUE()
 )
 ```
 
 ```DAX
-High Revenue Transaction Rate =
+High Revenue POS Record Rate =
 DIVIDE(
-    [High Revenue Transactions],
-    [Total Transactions]
+    [High Revenue POS Records],
+    [POS Records]
 )
 ```
 
@@ -92,5 +92,5 @@ CALCULATE(
 
 - Format revenue measures as Currency.
 - Format share and rate measures as Percentage.
-- Format transaction counts as Whole number.
+- Format POS record counts as Whole number.
 - Format quantity measures with one decimal place.

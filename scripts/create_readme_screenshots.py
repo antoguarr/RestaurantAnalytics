@@ -55,12 +55,12 @@ def save_overview(df: pd.DataFrame) -> None:
     gs = fig.add_gridspec(3, 4, height_ratios=[0.8, 2.2, 2.2], hspace=0.55, wspace=0.45)
 
     fig.suptitle("Restaurant POS Analytics Dashboard", x=0.05, ha="left", fontsize=22, weight="bold")
-    fig.text(0.05, 0.92, "Executive overview of revenue, demand timing, and transaction volume", fontsize=12, color=COLORS["muted"])
+    fig.text(0.05, 0.92, "Executive overview of revenue, demand timing, and POS record volume", fontsize=12, color=COLORS["muted"])
 
     kpis = [
         ("Total Revenue", currency(df["Revenue"].sum())),
-        ("Transactions", f"{len(df):,}"),
-        ("Avg Order Value", currency(df["Revenue"].mean())),
+        ("POS Records", f"{len(df):,}"),
+        ("Avg Line Revenue", currency(df["Revenue"].mean())),
         ("Units Sold", f"{df['Quantity'].sum():,.1f}"),
     ]
     for idx, (title, value) in enumerate(kpis):
@@ -149,18 +149,18 @@ def save_model_evaluation(df: pd.DataFrame) -> None:
     fig = plt.figure(figsize=(16, 8), facecolor="white")
     gs = fig.add_gridspec(2, 2, height_ratios=[1.2, 2.3], width_ratios=[0.9, 1.4], hspace=0.5, wspace=0.55)
 
-    fig.suptitle("High-Revenue Order Model Evaluation", x=0.05, ha="left", fontsize=22, weight="bold")
+    fig.suptitle("High-Revenue POS Record Model Evaluation", x=0.05, ha="left", fontsize=22, weight="bold")
     fig.text(0.05, 0.92, "Baseline comparison, cross-validation, and Random Forest confusion matrix", fontsize=12, color=COLORS["muted"])
 
     table_ax = fig.add_subplot(gs[0, :])
     table_ax.axis("off")
-    display_columns = ["Model", "Accuracy", "F1", "ROC_AUC", "CV_F1_Mean", "CV_ROC_AUC_Mean"]
+    display_columns = ["Model", "Accuracy", "F1", "ROC_AUC", "CV_F1_Mean"]
     table_data = summary[display_columns].copy()
     for column in display_columns[1:]:
         table_data[column] = table_data[column].map(lambda value: f"{value:.3f}")
     table = table_ax.table(
         cellText=table_data.values,
-        colLabels=["Model", "Accuracy", "F1", "ROC-AUC", "CV F1", "CV ROC-AUC"],
+        colLabels=["Model", "Accuracy", "F1", "ROC-AUC", "CV F1"],
         loc="center",
         cellLoc="center",
         colLoc="center",

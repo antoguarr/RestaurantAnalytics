@@ -1,16 +1,16 @@
-# Restaurant POS Sales Analysis
+# Restaurant POS Sales Analytics
+
+[GitHub Repository](https://github.com/antoguarr/RestaurantAnalytics)
+
+![Restaurant POS Analytics dashboard](docs/screenshots/dashboard-live.png)
 
 ## Project Overview
 
-This project analyzes simulated point-of-sale transaction data for a steakhouse restaurant. The goal is to identify revenue drivers, understand menu and server performance, uncover sales patterns by day and time, and test whether order-level information can be used to predict high-revenue transactions.
+This project analyzes simulated point-of-sale records for a steakhouse restaurant. The goal is to identify revenue drivers, understand menu and server performance, uncover sales patterns by day and time, and run a classification experiment identifying characteristics associated with high-value POS records.
 
 The analysis is designed as a business-facing data analytics project, combining exploratory data analysis, SQL, Power BI preparation, interactive dashboarding, machine learning evaluation, and actionable recommendations for restaurant management.
 
 ## Dashboard Screenshots
-
-### Executive Overview
-
-![Dashboard overview](docs/screenshots/dashboard-overview.png)
 
 ### Menu and Operations
 
@@ -26,17 +26,17 @@ This project investigates the following questions:
 
 - Which menu categories and items generate the most revenue?
 - Which days and hours produce the strongest sales?
-- How does server performance compare across revenue and order volume?
+- How does server performance compare across revenue and POS record volume?
 - Are certain order types or payment methods associated with higher revenue?
-- Can transaction details help predict whether an order will be high revenue?
+- Which recorded characteristics are associated with high-revenue POS records?
 
 ## Dataset
 
-The dataset contains 5,000 simulated restaurant POS transactions from 2024.
+The dataset contains 5,000 simulated restaurant POS records from 2024.
 
-Each row represents one transaction line item and includes:
+Each row represents one menu-item line recorded by the POS system and includes:
 
-- Date and time of transaction
+- Date and time recorded
 - Menu item and category
 - Quantity ordered
 - Price per item
@@ -44,6 +44,8 @@ Each row represents one transaction line item and includes:
 - Payment method
 - Order type
 - Server ID and server name
+
+The source does not include an order or receipt ID. Multiple line items therefore cannot be grouped into complete restaurant checks, so this project reports **POS record count** and **average line revenue** rather than transaction count or average order value.
 
 Dataset file:
 
@@ -80,17 +82,17 @@ The project is organized so that reusable logic is separated from the notebook:
 
 ## Key Findings
 
-### 1. Entrees are the main revenue driver
+### 1. Entrees contribute the largest revenue share
 
-Entrees generated **$272,974.90**, representing approximately **62.0%** of total revenue. This makes entree sales the strongest contributor to overall restaurant performance.
+Entrees generated **$272,974.90**, representing approximately **62.0%** of total revenue. This identifies entrees as the largest revenue contributor, but it does not establish profitability because product costs are unavailable.
 
-### 2. Desserts are underperforming
+### 2. Desserts may offer an upselling opportunity
 
-Desserts generated only **$17,739.00**, or about **4.0%** of total revenue. This suggests a potential opportunity to increase average order value through dessert upselling, bundled offers, or server prompts.
+Desserts represented approximately **4.0%** of revenue, or **$17,739.00**. Because desserts are lower-priced than entrees, this does not by itself prove poor performance; it suggests an opportunity to test dessert upselling, bundles, or server prompts.
 
-### 3. The top steak items drive over half of revenue
+### 3. Three premium steaks contribute over half of revenue
 
-New York Strip, Filet Mignon, and Ribeye Steak generated a combined **$228,576.70**, accounting for approximately **51.9%** of total revenue. These premium items are the restaurant's core sales drivers.
+New York Strip, Filet Mignon, and Ribeye Steak generated a combined **$228,576.70**, accounting for approximately **51.9%** of total revenue. Their contribution reflects both sales volume and higher menu prices, so revenue alone should not be interpreted as margin or item popularity.
 
 ### 4. Saturday has the strongest average daily revenue
 
@@ -98,15 +100,15 @@ Saturday produced the highest average daily revenue at approximately **$1,421.85
 
 ### 5. Dinner hours outperform lunch hours
 
-The strongest revenue hours were **7 PM, 8 PM, and 9 PM**, each generating roughly **$47,000-$49,000** in total revenue. Average order value during these peak dinner hours was approximately **$112**, compared with about **$66-$67** during early afternoon hours.
+The strongest revenue hours were **7 PM, 8 PM, and 9 PM**, each generating roughly **$47,000-$49,000** in total revenue. Average line revenue during these peak dinner hours was approximately **$112**, compared with about **$66-$67** during early afternoon hours.
 
 ### 6. Server revenue is balanced, with Nina leading
 
 Nina generated the highest total revenue at **$91,506.80**, representing approximately **20.8%** of total revenue. Overall server performance was relatively balanced, with the gap between the highest and lowest revenue-generating servers at about **$7,941.70**.
 
-## Machine Learning Component
+## Model Evaluation
 
-Several classification models were compared to predict whether a transaction would be classified as high revenue, where high revenue is defined as revenue above the dataset median.
+This is a classification experiment identifying characteristics associated with high-value POS records. The target is whether a record's revenue is above the dataset median; it is not a forecast of customer spend or a prediction made before an item is selected.
 
 Features used included:
 
@@ -120,17 +122,17 @@ Features used included:
 - Month
 - Weekend indicator
 
-Model evaluation includes a Dummy baseline, Logistic Regression baseline, and Random Forest model. The Random Forest performed best on the holdout set:
+Models were evaluated using a stratified 80/20 holdout split and five-fold stratified cross-validation. Random Forest performed best on holdout F1, while Logistic Regression produced similar cross-validation results with a simpler model:
 
-| Model | Accuracy | F1 | ROC-AUC | CV F1 | CV ROC-AUC |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Random Forest | 0.792 | 0.786 | 0.889 | 0.775 | 0.880 |
-| Logistic Regression | 0.773 | 0.763 | 0.881 | 0.768 | 0.874 |
-| Dummy Baseline | 0.501 | 0.000 | 0.500 | 0.000 | 0.500 |
+| Model | Accuracy | F1 | ROC-AUC | CV F1 |
+| --- | ---: | ---: | ---: | ---: |
+| Random Forest | 0.792 | 0.786 | 0.889 | 0.775 |
+| Logistic Regression | 0.773 | 0.763 | 0.881 | 0.768 |
+| Dummy Baseline | 0.501 | 0.000 | 0.500 | 0.000 |
 
-The dashboard also includes a confusion matrix, classification report, feature importance chart, and cross-validation results.
+The notebook and dashboard expose this comparison directly, followed by the Random Forest confusion matrix, classification report, and feature importances.
 
-This model should be interpreted as a decision-support experiment rather than a production forecasting system. Since the target is derived from transaction revenue and revenue is strongly influenced by menu item, price, and quantity, the model is most useful for understanding patterns associated with higher-value orders.
+Menu item is known only once a customer is ordering and indirectly carries price information. The model is therefore useful for describing patterns associated with higher-value POS records, not for forecasting customer demand or spend before an order begins.
 
 ## SQL Analysis
 
@@ -157,11 +159,11 @@ sql/results/
 ## Business Recommendations
 
 - Prioritize premium entree promotion, especially steak items that account for the majority of revenue.
-- Introduce dessert upselling strategies to improve performance in the lowest-revenue category.
+- Test dessert upselling strategies and measure whether they increase dessert attachment and revenue.
 - Staff peak dinner hours carefully, especially between 7 PM and 9 PM.
 - Use Saturday demand patterns to guide inventory planning and scheduling.
-- Study top-performing server behavior to identify successful upselling or service patterns.
-- Use predictive modeling as a supporting tool for identifying high-value order patterns, not as the sole basis for staffing or performance decisions.
+- Study top-performing server POS record patterns to form testable training hypotheses, without assuming revenue differences are caused by server behavior.
+- Use the classifier as an analytical experiment for identifying high-value record patterns, not as a forecasting or staff-evaluation tool.
 
 ## Project Structure
 
@@ -175,6 +177,7 @@ RestaurantAnalytics/
 │   └── steakhouse_pos_simulated_data.csv
 ├── docs/
 │   └── screenshots/
+│       ├── dashboard-live.png
 │       ├── dashboard-menu-operations.png
 │       ├── dashboard-model-evaluation.png
 │       └── dashboard-overview.png
@@ -284,7 +287,8 @@ python, pandas, streamlit, plotly, scikit-learn, sql, sqlite, powerbi, data-anal
 
 - The dataset is sourced from Kaggle and appears to be simulated or highly curated, so the findings should not be interpreted as conclusions about a real restaurant.
 - The data is already clean, so the project focuses more on validation, analysis, dashboarding, and modeling than complex data cleaning.
-- The high-revenue prediction target is created from the transaction revenue median. This is useful for classification practice, but it is not the same as forecasting future demand or profit.
+- The dataset has no order or receipt ID. It cannot support true order counts, check-level average order value, basket composition, or dessert attachment rates; all row-level metrics are labeled as POS records or line-item revenue.
+- The high-revenue target is created from the POS record revenue median. This is useful for classification practice, but it is not the same as forecasting future demand, customer spend, or profit.
 - Revenue is heavily influenced by menu item and price, so the model may learn pricing/category patterns more than deeper customer behavior.
 - The dataset does not include important business context such as food cost, margins, table size, customer history, promotions, reservations, weather, or labor costs.
 
@@ -296,4 +300,4 @@ python, pandas, streamlit, plotly, scikit-learn, sql, sqlite, powerbi, data-anal
 
 ## Summary
 
-This project demonstrates the use of Python, SQL, and business intelligence tools to translate restaurant transaction data into business insights. It combines revenue analysis, menu performance evaluation, server comparison, time-based sales trends, interactive dashboards, Power BI reporting preparation, and machine learning model evaluation to support operational decision-making.
+This project demonstrates the use of Python, SQL, and business intelligence tools to translate restaurant POS records into business insights. It combines revenue analysis, menu performance evaluation, server comparison, time-based sales trends, interactive dashboards, Power BI reporting preparation, and machine learning model evaluation to support operational decision-making.
