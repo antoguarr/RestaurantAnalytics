@@ -318,6 +318,43 @@ def show_model_tab(df: pd.DataFrame) -> None:
     st.code(model_results["classification_report"])
 
 
+def show_insights_tab() -> None:
+    recommendations = pd.DataFrame(
+        [
+            {
+                "Finding": "Entrees generated $272,974.90, about 62.0% of total revenue.",
+                "Recommendation": "Prioritize entree inventory, premium steak promotion, and entree pairing offers.",
+            },
+            {
+                "Finding": "Desserts generated $17,739.00, about 4.0% of total revenue.",
+                "Recommendation": "Introduce dessert upselling prompts, bundles, or post-entree offers.",
+            },
+            {
+                "Finding": "New York Strip, Filet Mignon, and Ribeye Steak generated $228,576.70 combined, about 51.9% of revenue.",
+                "Recommendation": "Protect availability of top steak items and promote beverage or side pairings.",
+            },
+            {
+                "Finding": "Saturday had the highest average daily revenue at about $1,421.85.",
+                "Recommendation": "Increase staffing and prep levels for Saturday service.",
+            },
+            {
+                "Finding": "7 PM, 8 PM, and 9 PM were the strongest revenue hours.",
+                "Recommendation": "Schedule experienced servers and kitchen coverage during peak dinner hours.",
+            },
+            {
+                "Finding": "Nina led server revenue with $91,506.80, about 20.8% of total revenue.",
+                "Recommendation": "Study top-server order patterns and use them for training or incentive design.",
+            },
+        ]
+    )
+
+    st.dataframe(
+        recommendations,
+        use_container_width=True,
+        hide_index=True,
+    )
+
+
 df = load_dashboard_data()
 filtered_df = filter_data(df)
 
@@ -332,8 +369,8 @@ if filtered_df.empty:
 
 show_kpis(filtered_df)
 
-overview_tab, menu_tab, operations_tab, model_tab = st.tabs(
-    ["Overview", "Menu", "Operations", "Model"]
+overview_tab, menu_tab, operations_tab, model_tab, insights_tab = st.tabs(
+    ["Overview", "Menu", "Operations", "Model", "Insights"]
 )
 
 with overview_tab:
@@ -347,3 +384,6 @@ with operations_tab:
 
 with model_tab:
     show_model_tab(df)
+
+with insights_tab:
+    show_insights_tab()

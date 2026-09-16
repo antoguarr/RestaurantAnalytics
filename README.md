@@ -46,6 +46,7 @@ Data/steakhouse_pos_simulated_data.csv
 - Jupyter Notebook
 - Streamlit
 - Plotly
+- Power BI
 
 ## Methodology
 
@@ -56,6 +57,8 @@ The project is organized so that reusable logic is separated from the notebook:
 - `src/model.py` builds and evaluates the machine learning pipeline.
 - `notebooks/eda.ipynb` uses those modules to run the analysis and present business insights.
 - `app.py` turns the analysis into an interactive Streamlit dashboard for business exploration.
+- `scripts/export_powerbi_data.py` exports a cleaned, feature-enriched dataset for Power BI.
+- `powerbi/` contains Power BI report instructions, suggested DAX measures, and the export-ready CSV.
 
 ## Key Findings
 
@@ -122,6 +125,13 @@ RestaurantAnalytics/
 │   └── steakhouse_pos_simulated_data.csv
 ├── notebooks/
 │   └── eda.ipynb
+├── powerbi/
+│   ├── README.md
+│   ├── dax_measures.md
+│   └── data/
+│       └── restaurant_pos_powerbi.csv
+├── scripts/
+│   └── export_powerbi_data.py
 ├── src/
 │   ├── __init__.py
 │   ├── data_cleaning.py
@@ -155,12 +165,27 @@ streamlit run app.py
 
 The dashboard includes KPI cards, filters, category and menu item analysis, weekday and hourly revenue trends, server performance, order type analysis, and model feature importance.
 
+To refresh the Power BI-ready CSV:
+
+```bash
+python scripts/export_powerbi_data.py
+```
+
+Then import this file into Power BI:
+
+```text
+powerbi/data/restaurant_pos_powerbi.csv
+```
+
+Power BI report setup instructions and DAX measures are available in the `powerbi/` folder.
+
 ## Future Improvements
 
 - Export charts to a `figures/` folder and include them in this README.
 - Add more model evaluation metrics such as confusion matrix, ROC-AUC, and cross-validation.
 - Compare the Random Forest model against simpler baseline models.
+- Build and save the final Power BI `.pbix` file after importing the prepared dataset.
 
 ## Summary
 
-This project demonstrates the use of Python-based data analysis to translate restaurant transaction data into business insights. It combines revenue analysis, menu performance evaluation, server comparison, time-based sales trends, and introductory machine learning to support operational decision-making.
+This project demonstrates the use of Python and business intelligence tools to translate restaurant transaction data into business insights. It combines revenue analysis, menu performance evaluation, server comparison, time-based sales trends, interactive dashboards, Power BI reporting preparation, and introductory machine learning to support operational decision-making.
