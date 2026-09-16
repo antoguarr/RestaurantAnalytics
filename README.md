@@ -4,7 +4,21 @@
 
 This project analyzes simulated point-of-sale transaction data for a steakhouse restaurant. The goal is to identify revenue drivers, understand menu and server performance, uncover sales patterns by day and time, and test whether order-level information can be used to predict high-revenue transactions.
 
-The analysis is designed as a business-facing data analytics project, combining exploratory data analysis, visualizations, basic machine learning, and actionable recommendations for restaurant management.
+The analysis is designed as a business-facing data analytics project, combining exploratory data analysis, SQL, Power BI preparation, interactive dashboarding, machine learning evaluation, and actionable recommendations for restaurant management.
+
+## Dashboard Screenshots
+
+### Executive Overview
+
+![Dashboard overview](docs/screenshots/dashboard-overview.png)
+
+### Menu and Operations
+
+![Menu and operations dashboard](docs/screenshots/dashboard-menu-operations.png)
+
+### Model Evaluation
+
+![Model evaluation dashboard](docs/screenshots/dashboard-model-evaluation.png)
 
 ## Business Questions
 
@@ -47,6 +61,7 @@ Data/steakhouse_pos_simulated_data.csv
 - Streamlit
 - Plotly
 - Power BI
+- SQL
 
 ## Methodology
 
@@ -58,7 +73,10 @@ The project is organized so that reusable logic is separated from the notebook:
 - `notebooks/eda.ipynb` uses those modules to run the analysis and present business insights.
 - `app.py` turns the analysis into an interactive Streamlit dashboard for business exploration.
 - `scripts/export_powerbi_data.py` exports a cleaned, feature-enriched dataset for Power BI.
+- `scripts/run_sql_analysis.py` runs SQL queries against the prepared dataset and exports result tables.
+- `scripts/create_readme_screenshots.py` generates dashboard screenshots for the README.
 - `powerbi/` contains Power BI report instructions, suggested DAX measures, and the export-ready CSV.
+- `sql/` contains reusable SQL queries and exported SQL result tables.
 
 ## Key Findings
 
@@ -88,7 +106,7 @@ Nina generated the highest total revenue at **$91,506.80**, representing approxi
 
 ## Machine Learning Component
 
-A Random Forest classification model was built to predict whether a transaction would be classified as high revenue, where high revenue is defined as revenue above the dataset median.
+Several classification models were compared to predict whether a transaction would be classified as high revenue, where high revenue is defined as revenue above the dataset median.
 
 Features used included:
 
@@ -102,9 +120,39 @@ Features used included:
 - Month
 - Weekend indicator
 
-The model achieved approximately **78.7% accuracy** on the test set.
+Model evaluation includes a Dummy baseline, Logistic Regression baseline, and Random Forest model. The Random Forest performed best on the holdout set:
 
-This model should be interpreted as a decision-support experiment rather than a production forecasting system. Since revenue is strongly influenced by item price and quantity, the model is most useful for understanding patterns associated with higher-value orders.
+| Model | Accuracy | F1 | ROC-AUC | CV F1 | CV ROC-AUC |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Random Forest | 0.792 | 0.786 | 0.889 | 0.775 | 0.880 |
+| Logistic Regression | 0.773 | 0.763 | 0.881 | 0.768 | 0.874 |
+| Dummy Baseline | 0.501 | 0.000 | 0.500 | 0.000 | 0.500 |
+
+The dashboard also includes a confusion matrix, classification report, feature importance chart, and cross-validation results.
+
+This model should be interpreted as a decision-support experiment rather than a production forecasting system. Since the target is derived from transaction revenue and revenue is strongly influenced by menu item, price, and quantity, the model is most useful for understanding patterns associated with higher-value orders.
+
+## SQL Analysis
+
+The project includes a small SQL analysis component using SQLite. Queries are stored in:
+
+```text
+sql/restaurant_analysis.sql
+```
+
+The SQL analysis answers questions such as:
+
+- Which menu categories generate the most revenue?
+- Which menu items are the top revenue drivers?
+- Which weekdays and hours perform best?
+- Which servers generate the most revenue?
+- Which servers have the highest dessert revenue share?
+
+SQL outputs are exported to:
+
+```text
+sql/results/
+```
 
 ## Business Recommendations
 
@@ -119,10 +167,17 @@ This model should be interpreted as a decision-support experiment rather than a 
 
 ```text
 RestaurantAnalytics/
+├── .streamlit/
+│   └── config.toml
 ├── .gitignore
 ├── app.py
 ├── Data/
 │   └── steakhouse_pos_simulated_data.csv
+├── docs/
+│   └── screenshots/
+│       ├── dashboard-menu-operations.png
+│       ├── dashboard-model-evaluation.png
+│       └── dashboard-overview.png
 ├── notebooks/
 │   └── eda.ipynb
 ├── powerbi/
@@ -131,7 +186,13 @@ RestaurantAnalytics/
 │   └── data/
 │       └── restaurant_pos_powerbi.csv
 ├── scripts/
-│   └── export_powerbi_data.py
+│   ├── create_readme_screenshots.py
+│   ├── export_powerbi_data.py
+│   └── run_sql_analysis.py
+├── sql/
+│   ├── README.md
+│   ├── restaurant_analysis.sql
+│   └── results/
 ├── src/
 │   ├── __init__.py
 │   ├── data_cleaning.py
@@ -163,7 +224,13 @@ To launch the interactive dashboard:
 streamlit run app.py
 ```
 
-The dashboard includes KPI cards, filters, category and menu item analysis, weekday and hourly revenue trends, server performance, order type analysis, and model feature importance.
+The dashboard includes KPI cards, filters, category and menu item analysis, weekday and hourly revenue trends, server performance, order type analysis, model comparison, confusion matrix, feature importance, and business recommendations.
+
+To run the SQL analysis:
+
+```bash
+python scripts/run_sql_analysis.py
+```
 
 To refresh the Power BI-ready CSV:
 
@@ -179,13 +246,54 @@ powerbi/data/restaurant_pos_powerbi.csv
 
 Power BI report setup instructions and DAX measures are available in the `powerbi/` folder.
 
+To regenerate README screenshots:
+
+```bash
+python scripts/create_readme_screenshots.py
+```
+
+## Deployment
+
+The Streamlit dashboard is ready to deploy from GitHub using `app.py` as the main file and `requirements.txt` for dependencies.
+
+Recommended Streamlit Community Cloud settings:
+
+```text
+Repository: antoguarr/RestaurantAnalytics
+Branch: main
+Main file path: app.py
+```
+
+After deployment, add the live dashboard link near the top of this README.
+
+## Suggested GitHub Metadata
+
+Recommended repository description:
+
+```text
+Interactive restaurant POS analytics project with Python, SQL, Streamlit, Power BI preparation, and machine learning model evaluation.
+```
+
+Recommended topics:
+
+```text
+python, pandas, streamlit, plotly, scikit-learn, sql, sqlite, powerbi, data-analysis, dashboard, machine-learning, restaurant-analytics
+```
+
+## Limitations
+
+- The dataset is sourced from Kaggle and appears to be simulated or highly curated, so the findings should not be interpreted as conclusions about a real restaurant.
+- The data is already clean, so the project focuses more on validation, analysis, dashboarding, and modeling than complex data cleaning.
+- The high-revenue prediction target is created from the transaction revenue median. This is useful for classification practice, but it is not the same as forecasting future demand or profit.
+- Revenue is heavily influenced by menu item and price, so the model may learn pricing/category patterns more than deeper customer behavior.
+- The dataset does not include important business context such as food cost, margins, table size, customer history, promotions, reservations, weather, or labor costs.
+
 ## Future Improvements
 
-- Export charts to a `figures/` folder and include them in this README.
-- Add more model evaluation metrics such as confusion matrix, ROC-AUC, and cross-validation.
-- Compare the Random Forest model against simpler baseline models.
+- Add a live Streamlit deployment link after publishing the app.
 - Build and save the final Power BI `.pbix` file after importing the prepared dataset.
+- Add margin or cost data if available to analyze profitability, not only revenue.
 
 ## Summary
 
-This project demonstrates the use of Python and business intelligence tools to translate restaurant transaction data into business insights. It combines revenue analysis, menu performance evaluation, server comparison, time-based sales trends, interactive dashboards, Power BI reporting preparation, and introductory machine learning to support operational decision-making.
+This project demonstrates the use of Python, SQL, and business intelligence tools to translate restaurant transaction data into business insights. It combines revenue analysis, menu performance evaluation, server comparison, time-based sales trends, interactive dashboards, Power BI reporting preparation, and machine learning model evaluation to support operational decision-making.
