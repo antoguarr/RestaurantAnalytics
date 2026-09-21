@@ -7,6 +7,11 @@ import streamlit as st
 from src.data_cleaning import clean_pos_data, load_pos_data
 from src.feature_engineering import add_high_revenue_target, add_time_features
 from src.model import evaluate_revenue_models, get_feature_importance
+from src.staffing_model import (
+    WEEKDAY_ORDER as STAFFING_WEEKDAY_ORDER,
+    build_staffing_schedule,
+    evaluate_staffing_models,
+)
 
 
 PROJECT_ROOT = Path(__file__).parent
@@ -49,6 +54,11 @@ def load_dashboard_data() -> pd.DataFrame:
 @st.cache_resource
 def evaluate_dashboard_models(df: pd.DataFrame) -> dict:
     return evaluate_revenue_models(df)
+
+
+@st.cache_resource
+def evaluate_dashboard_staffing(df: pd.DataFrame) -> dict:
+    return evaluate_staffing_models(df)
 
 
 def format_currency(value: float) -> str:
@@ -359,6 +369,98 @@ def show_model_tab(df: pd.DataFrame) -> None:
     st.code(random_forest_results["classification_report"])
 
 
+def show_staffing_tab(df: pd.DataFrame) -> None:
+    evaluation = evaluate_dashboard_staffing(df)
+    schedule = build_staffing_schedule(evaluation)
+    random_forest_results = evaluation["models"]["Random Forest"]
+
+    st.caption(
+        "Staffing demand is a proxy: full staffing means hourly units sold are at or "
+        "above the training period's 75th percentile. Actual staffing levels are not "
+        "available in the dataset."
+    )
+
+    threshold_col, split_col, recall_col = st.columns(3)
+    threshold_col.metric(
+        "High-workload threshold",
+        f"{evaluation['demand_threshold']:.0f} units/hour",
+    )
+    split_col.metric("Test period begins", str(evaluation["split_date"].date()))
+    recall_col.metric("Random Forest recall", f"{random_forest_results['recall']:.1%}")
+
+    summary = evaluation["summary"][
+        [
+            "Model",
+            "Accuracy",
+            "Precision",
+            "Recall",
+            "F1",
+            "ROC_AUC",
+            "CV_F1_Mean",
+        ]
+    ].rename(columns={"ROC_AUC": "ROC-AUC", "CV_F1_Mean": "CV F1"})
+
+    st.subheader("Staffing Model Comparison")
+    st.dataframe(
+        summary,
+        width="stretch",
+        hide_index=True,
+        column_config={
+            column: st.column_config.NumberColumn(format="%.3f")
+            for column in ["Accuracy", "Precision", "Recall", "F1", "ROC-AUC", "CV F1"]
+        },
+    )
+
+    schedule_matrix = schedule.pivot(
+        index="Weekday",
+        columns="Hour",
+        values="Staffing Demand Score",
+    ).reindex(STAFFING_WEEKDAY_ORDER)
+    fig = px.imshow(
+        schedule_matrix,
+        text_auto=".2f",
+        aspect="auto",
+        title="Random Forest Staffing-Demand Score by Weekday and Hour",
+        labels={"x": "Hour", "y": "Weekday", "color": "Demand score"},
+        color_continuous_scale="YlOrRd",
+        zmin=0,
+        zmax=1,
+    )
+    st.plotly_chart(fig, width="stretch")
+
+    recommended_windows = (
+        schedule.loc[schedule["Full Staffing Recommended"]]
+        .groupby("Weekday", observed=True)["Hour"]
+        .apply(lambda hours: ", ".join(f"{hour}:00" for hour in hours))
+        .reindex(STAFFING_WEEKDAY_ORDER)
+        .reset_index(name="Recommended Full-Staffing Hours")
+    )
+
+    confusion_df = pd.DataFrame(
+        random_forest_results["confusion_matrix"],
+        index=["Actual Standard", "Actual Full"],
+        columns=["Predicted Standard", "Predicted Full"],
+    )
+    left, right = st.columns([1, 1.3])
+    with left:
+        confusion_fig = px.imshow(
+            confusion_df,
+            text_auto=True,
+            title="Random Forest Staffing Confusion Matrix",
+            color_continuous_scale=["#F4E3C1", "#2F6F73"],
+        )
+        st.plotly_chart(confusion_fig, width="stretch")
+    with right:
+        st.subheader("Recommended Full-Staffing Windows")
+        st.dataframe(recommended_windows, width="stretch", hide_index=True)
+
+    st.info(
+        "The Random Forest finds 74.9% of high-workload hours, but it also creates "
+        "false positives. Managers should treat the schedule as a planning signal and "
+        "combine it with reservations, events, weather, labor costs, and local knowledge."
+    )
+
+
 def show_insights_tab() -> None:
     recommendations = pd.DataFrame(
         [
@@ -376,11 +478,11 @@ def show_insights_tab() -> None:
             },
             {
                 "Finding": "Saturday had the highest average daily revenue at about $1,421.85.",
-                "Recommendation": "Increase staffing and prep levels for Saturday service.",
+                "Recommendation": "Use Saturday demand patterns to guide inventory and prep planning.",
             },
             {
-                "Finding": "7 PM, 8 PM, and 9 PM were the strongest revenue hours.",
-                "Recommendation": "Schedule experienced servers and kitchen coverage during peak dinner hours.",
+                "Finding": "The staffing model flags 5 PM through 10 PM daily, plus Saturday at 1 PM.",
+                "Recommendation": "Use these windows as a conservative signal, then adjust for reservations and local conditions.",
             },
             {
                 "Finding": "Nina led server revenue with $91,506.80, about 20.8% of total revenue.",
@@ -410,8 +512,8 @@ if filtered_df.empty:
 
 show_kpis(filtered_df)
 
-overview_tab, menu_tab, operations_tab, model_tab, insights_tab = st.tabs(
-    ["Overview", "Menu", "Operations", "Model", "Insights"]
+overview_tab, menu_tab, operations_tab, model_tab, staffing_tab, insights_tab = st.tabs(
+    ["Overview", "Menu", "Operations", "Model", "Staffing", "Insights"]
 )
 
 with overview_tab:
@@ -425,6 +527,9 @@ with operations_tab:
 
 with model_tab:
     show_model_tab(df)
+
+with staffing_tab:
+    show_staffing_tab(df)
 
 with insights_tab:
     show_insights_tab()

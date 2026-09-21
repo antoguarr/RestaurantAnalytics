@@ -72,10 +72,12 @@ The project is organized so that reusable logic is separated from the notebook:
 - `src/data_cleaning.py` loads the POS data, validates required columns, standardizes data types, and removes duplicate rows.
 - `src/feature_engineering.py` creates calendar, hourly, weekend, and high-revenue target features.
 - `src/model.py` builds and evaluates the machine learning pipeline.
+- `src/staffing_model.py` aggregates hourly workload and evaluates schedule-time staffing models with chronological validation.
 - `notebooks/eda.ipynb` uses those modules to run the analysis and present business insights.
 - `app.py` turns the analysis into an interactive Streamlit dashboard for business exploration.
 - `scripts/export_powerbi_data.py` exports a cleaned, feature-enriched dataset for Power BI.
 - `scripts/run_sql_analysis.py` runs SQL queries against the prepared dataset and exports result tables.
+- `scripts/run_staffing_model.py` regenerates the staffing results tables and README figure.
 - `scripts/create_readme_screenshots.py` generates dashboard screenshots for the README.
 - `powerbi/` contains Power BI report instructions, suggested DAX measures, and the export-ready CSV.
 - `sql/` contains reusable SQL queries and exported SQL result tables.
@@ -134,6 +136,26 @@ The notebook and dashboard expose this comparison directly, followed by the Rand
 
 Menu item is known only once a customer is ordering and indirectly carries price information. The model is therefore useful for describing patterns associated with higher-value POS records, not for forecasting customer demand or spend before an order begins.
 
+## Staffing-Demand Model
+
+The staffing model estimates when full staffing may be warranted using only information available when a schedule is created: hour, weekday, and cyclical month features. Because the source does not contain actual staffing levels or labor standards, **full staffing is a high-workload proxy**, defined as an open hour with at least **9 units sold**. This threshold is the 75th percentile calculated from the training period.
+
+The pipeline aggregates the POS data into 4,392 date-hour slots, fills open hours with no recorded sales, trains on the first 80% of dates, and evaluates on the final 20% beginning October 19, 2024. Five-fold time-series cross-validation is applied only to the training period.
+
+| Model | Accuracy | Precision | Recall | F1 | ROC-AUC | CV F1 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Logistic Regression | 0.620 | 0.376 | 0.736 | 0.498 | 0.659 | 0.416 |
+| Random Forest | 0.608 | 0.369 | 0.749 | 0.494 | 0.668 | 0.472 |
+| Dummy Baseline | 0.744 | 0.000 | 0.000 | 0.000 | 0.500 | 0.000 |
+
+The Dummy model's high accuracy comes from always predicting the majority class and missing every high-workload hour. The Random Forest is used for the staffing schedule because it has the strongest time-series CV F1 and holdout recall. It identifies **74.9%** of high-workload hours, but its **36.9% precision** means it also recommends full staffing for many standard-demand hours. This is appropriate only as a conservative planning signal, not an automated labor decision.
+
+The model recommends full staffing most consistently from **5 PM through 10 PM** on every weekday, with an additional **Saturday 1 PM** signal.
+
+![Staffing-demand model results](docs/screenshots/staffing-model-evaluation.png)
+
+Reproducible tables are available in `docs/model_outputs/staffing_model_results.csv` and `docs/model_outputs/staffing_schedule.csv`.
+
 ## SQL Analysis
 
 The project includes a small SQL analysis component using SQLite. Queries are stored in:
@@ -160,7 +182,7 @@ sql/results/
 
 - Prioritize premium entree promotion, especially steak items that account for the majority of revenue.
 - Test dessert upselling strategies and measure whether they increase dessert attachment and revenue.
-- Staff peak dinner hours carefully, especially between 7 PM and 9 PM.
+- Use the staffing-demand model as a conservative planning signal for 5 PM through 10 PM, then adjust using reservations, events, weather, and manager knowledge.
 - Use Saturday demand patterns to guide inventory planning and scheduling.
 - Study top-performing server POS record patterns to form testable training hypotheses, without assuming revenue differences are caused by server behavior.
 - Use the classifier as an analytical experiment for identifying high-value record patterns, not as a forecasting or staff-evaluation tool.
@@ -176,11 +198,15 @@ RestaurantAnalytics/
 ├── Data/
 │   └── steakhouse_pos_simulated_data.csv
 ├── docs/
+│   ├── model_outputs/
+│   │   ├── staffing_model_results.csv
+│   │   └── staffing_schedule.csv
 │   └── screenshots/
 │       ├── dashboard-live.png
 │       ├── dashboard-menu-operations.png
 │       ├── dashboard-model-evaluation.png
-│       └── dashboard-overview.png
+│       ├── dashboard-overview.png
+│       └── staffing-model-evaluation.png
 ├── notebooks/
 │   └── eda.ipynb
 ├── powerbi/
@@ -191,7 +217,8 @@ RestaurantAnalytics/
 ├── scripts/
 │   ├── create_readme_screenshots.py
 │   ├── export_powerbi_data.py
-│   └── run_sql_analysis.py
+│   ├── run_sql_analysis.py
+│   └── run_staffing_model.py
 ├── sql/
 │   ├── README.md
 │   ├── restaurant_analysis.sql
@@ -200,7 +227,10 @@ RestaurantAnalytics/
 │   ├── __init__.py
 │   ├── data_cleaning.py
 │   ├── feature_engineering.py
-│   └── model.py
+│   ├── model.py
+│   └── staffing_model.py
+├── tests/
+│   └── test_staffing_model.py
 ├── README.md
 └── requirements.txt
 ```
@@ -227,7 +257,19 @@ To launch the interactive dashboard:
 streamlit run app.py
 ```
 
-The dashboard includes KPI cards, filters, category and menu item analysis, weekday and hourly revenue trends, server performance, order type analysis, model comparison, confusion matrix, feature importance, and business recommendations.
+The dashboard includes KPI cards, filters, category and menu item analysis, weekday and hourly revenue trends, server performance, order type analysis, revenue-model evaluation, a staffing-demand model, confusion matrices, feature importance, and business recommendations.
+
+To rerun the staffing pipeline and regenerate its tables and README figure:
+
+```bash
+python scripts/run_staffing_model.py
+```
+
+To run the staffing pipeline tests:
+
+```bash
+python -m unittest tests/test_staffing_model.py
+```
 
 To run the SQL analysis:
 
@@ -289,6 +331,8 @@ python, pandas, streamlit, plotly, scikit-learn, sql, sqlite, powerbi, data-anal
 - The data is already clean, so the project focuses more on validation, analysis, dashboarding, and modeling than complex data cleaning.
 - The dataset has no order or receipt ID. It cannot support true order counts, check-level average order value, basket composition, or dessert attachment rates; all row-level metrics are labeled as POS records or line-item revenue.
 - The high-revenue target is created from the POS record revenue median. This is useful for classification practice, but it is not the same as forecasting future demand, customer spend, or profit.
+- The staffing target is a top-quartile units-sold proxy, not an observed full-staffing requirement. The model does not include actual staffing, reservations, events, weather, employee availability, wage rates, or service-level targets.
+- The hourly grid assumes the restaurant was open every day from 11 AM through 10 PM; the source does not contain an operating-hours or closure calendar.
 - Revenue is heavily influenced by menu item and price, so the model may learn pricing/category patterns more than deeper customer behavior.
 - The dataset does not include important business context such as food cost, margins, table size, customer history, promotions, reservations, weather, or labor costs.
 
@@ -297,7 +341,8 @@ python, pandas, streamlit, plotly, scikit-learn, sql, sqlite, powerbi, data-anal
 - Add a live Streamlit deployment link after publishing the app.
 - Build and save the final Power BI `.pbix` file after importing the prepared dataset.
 - Add margin or cost data if available to analyze profitability, not only revenue.
+- Validate the staffing proxy against real labor schedules, wait times, covers, and service-level outcomes before operational use.
 
 ## Summary
 
-This project demonstrates the use of Python, SQL, and business intelligence tools to translate restaurant POS records into business insights. It combines revenue analysis, menu performance evaluation, server comparison, time-based sales trends, interactive dashboards, Power BI reporting preparation, and machine learning model evaluation to support operational decision-making.
+This project demonstrates the use of Python, SQL, and business intelligence tools to translate restaurant POS records into business insights. It combines revenue analysis, menu performance evaluation, server comparison, time-based sales trends, interactive dashboards, Power BI reporting preparation, high-value record classification, and staffing-demand modeling to support operational decision-making.
