@@ -1,6 +1,8 @@
 # Tableau Dashboard Guide
 
-This folder is the Tableau reporting layer for the restaurant POS analytics project. It contains a ready-to-import workbook, reproducible CSV sources, calculated fields, and a precise dashboard build specification.
+**Status: Complete and ready for Tableau import.**
+
+This folder is the Tableau reporting layer for the restaurant POS analytics project. It contains a ready-to-import workbook, reproducible CSV sources, calculated fields, two completed dashboard design previews, and a precise dashboard build specification.
 
 ![Executive overview preview](screenshots/tableau-executive-overview.png)
 

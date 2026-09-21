@@ -2,6 +2,8 @@
 
 [GitHub Repository](https://github.com/antoguarr/RestaurantAnalytics)
 
+**Project status: Complete** | Python analysis, SQL, machine learning, Streamlit dashboard, staffing model, Power BI data layer, and Tableau reporting layer are included in this repository.
+
 ![Restaurant POS Analytics dashboard](docs/screenshots/dashboard-live.png)
 
 ## Project Overview
@@ -20,11 +22,21 @@ The analysis is designed as a business-facing data analytics project, combining 
 
 ![Model evaluation dashboard](docs/screenshots/dashboard-model-evaluation.png)
 
-### Tableau BI Layer
+### Tableau Reporting Layer: Complete
 
 ![Tableau executive overview design](tableau/screenshots/tableau-executive-overview.png)
 
-The `tableau/` folder contains a ready-to-import Excel data source, reproducible CSV exports, calculated fields, a two-dashboard build specification, and deployment instructions for Tableau Public.
+![Tableau staffing and model evaluation design](tableau/screenshots/tableau-staffing-models.png)
+
+The completed Tableau repository package includes:
+
+- [Tableau-ready Excel workbook](tableau/data/restaurant_pos_tableau.xlsx) with POS records, staffing recommendations, model results, and a data dictionary
+- [Tableau dashboard guide](tableau/README.md) covering the Executive Overview and Staffing and Models dashboards
+- [Calculated fields](tableau/calculated_fields.md) for KPIs, comparisons, and staffing recommendations
+- Reproducible CSV exports and Python generation scripts
+- Tableau Public deployment instructions
+
+Publishing to Tableau Public is optional and requires the repository owner's Tableau account. The local Tableau reporting deliverable is complete and version-controlled.
 
 ## Business Questions
 
@@ -379,7 +391,7 @@ python, pandas, streamlit, plotly, scikit-learn, sql, sqlite, tableau, powerbi, 
 ## Future Improvements
 
 - Add a live Streamlit deployment link after publishing the app.
-- Publish the Tableau workbook to Tableau Public and replace the design previews with screenshots from the live dashboard.
+- Optionally publish the completed Tableau workbook to Tableau Public and replace the repository previews with screenshots from the live dashboard.
 - Build and save the final Power BI `.pbix` file after importing the prepared dataset.
 - Add margin or cost data if available to analyze profitability, not only revenue.
 - Validate the staffing proxy against real labor schedules, wait times, covers, and service-level outcomes before operational use.
