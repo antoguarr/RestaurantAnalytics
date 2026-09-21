@@ -8,7 +8,7 @@
 
 This project analyzes simulated point-of-sale records for a steakhouse restaurant. The goal is to identify revenue drivers, understand menu and server performance, uncover sales patterns by day and time, and run a classification experiment identifying characteristics associated with high-value POS records.
 
-The analysis is designed as a business-facing data analytics project, combining exploratory data analysis, SQL, Power BI preparation, interactive dashboarding, machine learning evaluation, and actionable recommendations for restaurant management.
+The analysis is designed as a business-facing data analytics project, combining exploratory data analysis, SQL, Streamlit, Tableau, Power BI preparation, machine learning evaluation, and actionable recommendations for restaurant management.
 
 ## Dashboard Screenshots
 
@@ -19,6 +19,12 @@ The analysis is designed as a business-facing data analytics project, combining 
 ### Model Evaluation
 
 ![Model evaluation dashboard](docs/screenshots/dashboard-model-evaluation.png)
+
+### Tableau BI Layer
+
+![Tableau executive overview design](tableau/screenshots/tableau-executive-overview.png)
+
+The `tableau/` folder contains a ready-to-import Excel data source, reproducible CSV exports, calculated fields, a two-dashboard build specification, and deployment instructions for Tableau Public.
 
 ## Business Questions
 
@@ -63,6 +69,7 @@ Data/steakhouse_pos_simulated_data.csv
 - Streamlit
 - Plotly
 - Power BI
+- Tableau
 - SQL
 
 ## Methodology
@@ -76,10 +83,13 @@ The project is organized so that reusable logic is separated from the notebook:
 - `notebooks/eda.ipynb` uses those modules to run the analysis and present business insights.
 - `app.py` turns the analysis into an interactive Streamlit dashboard for business exploration.
 - `scripts/export_powerbi_data.py` exports a cleaned, feature-enriched dataset for Power BI.
+- `scripts/export_tableau_data.py` exports POS, staffing, and model-comparison tables for Tableau.
+- `scripts/create_tableau_previews.py` generates the Tableau dashboard design previews.
 - `scripts/run_sql_analysis.py` runs SQL queries against the prepared dataset and exports result tables.
 - `scripts/run_staffing_model.py` regenerates the staffing results tables and README figure.
 - `scripts/create_readme_screenshots.py` generates dashboard screenshots for the README.
 - `powerbi/` contains Power BI report instructions, suggested DAX measures, and the export-ready CSV.
+- `tableau/` contains the Tableau-ready workbook, calculated fields, dashboard specification, screenshots, and reproducible source tables.
 - `sql/` contains reusable SQL queries and exported SQL result tables.
 
 ## Key Findings
@@ -214,9 +224,22 @@ RestaurantAnalytics/
 │   ├── dax_measures.md
 │   └── data/
 │       └── restaurant_pos_powerbi.csv
+├── tableau/
+│   ├── README.md
+│   ├── calculated_fields.md
+│   ├── data/
+│   │   ├── model_results.csv
+│   │   ├── pos_records.csv
+│   │   ├── restaurant_pos_tableau.xlsx
+│   │   └── staffing_schedule.csv
+│   └── screenshots/
+│       ├── tableau-executive-overview.png
+│       └── tableau-staffing-models.png
 ├── scripts/
+│   ├── create_tableau_previews.py
 │   ├── create_readme_screenshots.py
 │   ├── export_powerbi_data.py
+│   ├── export_tableau_data.py
 │   ├── run_sql_analysis.py
 │   └── run_staffing_model.py
 ├── sql/
@@ -291,6 +314,21 @@ powerbi/data/restaurant_pos_powerbi.csv
 
 Power BI report setup instructions and DAX measures are available in the `powerbi/` folder.
 
+To refresh the Tableau-ready sources and dashboard previews:
+
+```bash
+python scripts/export_tableau_data.py
+python scripts/create_tableau_previews.py
+```
+
+Import the prepared workbook into Tableau:
+
+```text
+tableau/data/restaurant_pos_tableau.xlsx
+```
+
+The complete Tableau build and Tableau Public publishing instructions are in `tableau/README.md`.
+
 To regenerate README screenshots:
 
 ```bash
@@ -311,18 +349,20 @@ Main file path: app.py
 
 After deployment, add the live dashboard link near the top of this README.
 
+The Tableau data source is also ready for Tableau Public. Upload `tableau/data/restaurant_pos_tableau.xlsx`, build the two specified dashboards, publish the workbook, and add its public URL near the top of this README. Tableau Public makes both the visualization and its underlying data public.
+
 ## Suggested GitHub Metadata
 
 Recommended repository description:
 
 ```text
-Interactive restaurant POS analytics project with Python, SQL, Streamlit, Power BI preparation, and machine learning model evaluation.
+Restaurant POS analytics project with Python, SQL, Streamlit, Tableau, Power BI, and machine learning model evaluation.
 ```
 
 Recommended topics:
 
 ```text
-python, pandas, streamlit, plotly, scikit-learn, sql, sqlite, powerbi, data-analysis, dashboard, machine-learning, restaurant-analytics
+python, pandas, streamlit, plotly, scikit-learn, sql, sqlite, tableau, powerbi, data-analysis, dashboard, machine-learning, restaurant-analytics
 ```
 
 ## Limitations
@@ -339,10 +379,11 @@ python, pandas, streamlit, plotly, scikit-learn, sql, sqlite, powerbi, data-anal
 ## Future Improvements
 
 - Add a live Streamlit deployment link after publishing the app.
+- Publish the Tableau workbook to Tableau Public and replace the design previews with screenshots from the live dashboard.
 - Build and save the final Power BI `.pbix` file after importing the prepared dataset.
 - Add margin or cost data if available to analyze profitability, not only revenue.
 - Validate the staffing proxy against real labor schedules, wait times, covers, and service-level outcomes before operational use.
 
 ## Summary
 
-This project demonstrates the use of Python, SQL, and business intelligence tools to translate restaurant POS records into business insights. It combines revenue analysis, menu performance evaluation, server comparison, time-based sales trends, interactive dashboards, Power BI reporting preparation, high-value record classification, and staffing-demand modeling to support operational decision-making.
+This project demonstrates the use of Python, SQL, Streamlit, Tableau, and Power BI to translate restaurant POS records into business insights. It combines revenue analysis, menu performance evaluation, server comparison, time-based sales trends, interactive dashboards, high-value record classification, and staffing-demand modeling to support operational decision-making.
