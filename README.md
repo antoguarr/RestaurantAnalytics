@@ -336,10 +336,34 @@ For Tableau Public, upload `tableau/data/restaurant_pos_tableau.xlsx` and follow
 - Tableau
 - Power BI
 
-## Future Improvements
+## Next Steps
+
+### Statistical Validation
+
+- Report cross-validation results as mean plus or minus standard deviation so model stability is visible across folds.
+- Add 95% bootstrap confidence intervals for precision, recall, F1, ROC-AUC, and the most important business comparisons.
+- Add precision-recall AUC, particularly for the imbalanced staffing task.
+- Compare staffing thresholds such as `0.40`, `0.50`, and `0.60`, showing precision, recall, F1, and the number of hours flagged at each threshold.
+- Evaluate probability calibration with a calibration curve and Brier score before interpreting the staffing-demand score as a real probability.
+- Report sample sizes, percentage differences, confidence intervals, and suitable effect sizes for weekday, service-period, category, and server comparisons.
+
+### Expanded Exploratory Analysis
+
+- Expand the EDA with revenue and quantity distributions, outlier checks, monthly trends, daily variability, price-versus-volume analysis, and category and item mix over time.
+- Compare lunch and dinner periods using both totals and normalized daily measures.
+- Examine whether apparent server and weekday differences remain after accounting for menu mix, hour, and POS record volume.
+- Add clearer visual explanations of class balance, probability distributions, model errors, and the records associated with false positives and false negatives.
+
+### Real-World Restaurant Validation
+
+- Repeat the analysis on anonymized real restaurant POS data containing order or receipt IDs so order counts, check-level average order value, basket composition, and dessert attachment can be measured correctly.
+- Add actual labor schedules, employee counts, covers, reservations, events, weather, wait times, service outcomes, wages, food costs, discounts, and waste.
+- Replace the units-sold staffing proxy with an observed operational target, such as whether scheduled staffing met a defined service-level or labor-efficiency standard.
+- Retrain and test the models using chronological holdouts across multiple locations or years to measure performance under real operating conditions.
+- Quantify the financial tradeoff between additional labor cost and the cost of understaffing, then choose the staffing threshold using expected business cost.
+- Validate recommendations through controlled operational trials, such as dessert-upselling tests or adjusted staffing windows, before making causal claims about real-world outcomes.
+
+### Reporting and Deployment
 
 - Add live Streamlit and Tableau Public links after publishing.
 - Build the final Power BI `.pbix` report in Power BI Desktop.
-- Add food cost and labor cost data to measure profitability.
-- Validate the staffing proxy against real schedules, covers, wait times, and service outcomes.
-- Evaluate the models on a larger real-world dataset with additional demand drivers.
